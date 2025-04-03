@@ -1,4 +1,4 @@
-const { verifiedAddress } = require("./address");
+const { verifiedAddress } = require("../utils/address");
 
 module.exports = {
     minAmount: 0.01, // ETH
