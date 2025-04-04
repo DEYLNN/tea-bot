@@ -1,9 +1,17 @@
+const config = require('./src/config/config');
+const TokenAirdrop = require('./src/modules/distribute-tokens');
 const MultiSender = require('./src/modules/multi-sender');
 require('dotenv').config();
 
-const sender = new MultiSender(process.env.INFURA_RPC);
+const rpcUrl = process.env.INFURA_RPC || ""
 
-const modules = [sender.runAll.bind(sender)];
+const sender = new MultiSender(rpcUrl);
+const MultiSenderTokens = new TokenAirdrop(rpcUrl, config.TokenSenderContractAddress);
+
+const modules = [
+    sender.runAll.bind(sender),
+    MultiSenderTokens.runAll.bind(MultiSenderTokens)
+];
 
 async function runModules() {
     while (true) {
