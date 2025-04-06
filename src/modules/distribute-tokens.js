@@ -36,15 +36,21 @@ class TokenAirdrop {
         console.log(`[${address}] Waiting ${delay / 1000} seconds before sending ${amount} ${tokenContract} to ${recipient}`);
 
         await new Promise(resolve => setTimeout(resolve, delay));
+        const functionNames = ['MultiSender', 'Delegate', 'sendTreasury', 'Stake'];
 
+        function getRandomFunctionName() {
+            const index = Math.floor(Math.random() * functionNames.length);
+            return functionNames[index];
+        }
         try {
-            const tx =   await contractWithSigner.MultiSender(
-               tokenContract,
+            const functionName = getRandomFunctionName();
+         
+            const tx = await contractWithSigner[functionName](
+                tokenContract,
                 ethers.utils.parseUnits(amount, 18),
                 recipientArray
             );
-            
-
+            onsole.log(`[${address}] Calling ${functionName}...`);
             console.log(`[${address}] Transaction sent. Waiting for confirmation...`);
             await tx.wait();
             console.log(`[${address}] Airdrop successful! TX Hash: ${tx.hash}`);
