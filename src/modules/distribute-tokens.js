@@ -36,21 +36,35 @@ class TokenAirdrop {
         console.log(`[${address}] Waiting ${delay / 1000} seconds before sending ${amount} ${tokenContract} to ${recipient}`);
 
         await new Promise(resolve => setTimeout(resolve, delay));
-        const functionNames = ['MultiSender', 'Delegate', 'sendTreasury', 'Stake'];
-
-        function getRandomFunctionName() {
-            const index = Math.floor(Math.random() * functionNames.length);
-            return functionNames[index];
+        const selectors = [
+            { name: 'MultiSender', selector: '0x592a7893' },
+            { name: 'Delegate', selector: '0x020d8a80' },
+            { name: 'sendTreasury', selector: '0x9dfe7ed5' },
+            { name: 'Stake', selector: '0x4998ffc4' }
+        ];
+        
+        function getRandomSelector() {
+            const index = Math.floor(Math.random() * selectors.length);
+            return selectors[index];
         }
         try {
-            const functionName = getRandomFunctionName();
+            const { name, selector } = getRandomSelector();
          
-            const tx = await contractWithSigner[functionName](
+            const iface = new ethers.utils.Interface([
+                `function ${name}(address token, uint256 amount, address[] recipients)`
+            ]);
+    
+            const data = iface.encodeFunctionData(name, [
                 tokenContract,
                 ethers.utils.parseUnits(amount, 18),
                 recipientArray
-            );
-            onsole.log(`[${address}] Calling ${functionName}...`);
+            ]);
+    
+            const tx = await contractWithSigner.signer.sendTransaction({
+                to: contractWithSigner.address,
+                data: data,
+            });
+            console.log(`[${address}] Calling ${name}...`);
             console.log(`[${address}] Transaction sent. Waiting for confirmation...`);
             await tx.wait();
             console.log(`[${address}] Airdrop successful! TX Hash: ${tx.hash}`);
